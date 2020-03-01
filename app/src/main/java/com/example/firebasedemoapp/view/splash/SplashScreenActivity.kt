@@ -5,8 +5,7 @@ import android.util.Log
 import com.example.firebasedemoapp.R
 import com.example.firebasedemoapp.utils.extentions.launchActivity
 import com.example.firebasedemoapp.view.BaseActivity
-import com.example.firebasedemoapp.view.MainActivity
-import com.google.firebase.auth.FirebaseUser
+import com.example.firebasedemoapp.view.main.MainActivity
 
 class SplashScreenActivity : BaseActivity() {
 
@@ -16,8 +15,9 @@ class SplashScreenActivity : BaseActivity() {
 
     }
 
-    override fun onUserLoggedIn(user: FirebaseUser) {
+    override fun onUserLoggedIn() {
         launchActivity<MainActivity> {  }
+        finish()
     }
 
     override fun onUserLoggedOut() {

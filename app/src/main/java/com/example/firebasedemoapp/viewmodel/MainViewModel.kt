@@ -23,16 +23,35 @@ class MainViewModel(private val repository: IMainRepository) : ViewModel() {
         this.isItemsInitialized.value = true
     }
 
-    val addToFavoritNetworkState = MutableLiveData<NetworkState>()
+    fun refreshItems() {
+        Log.e("ViewModel", "refreshItems")
+        repository.refreshItems()
+    }
 
-    fun addItemToFavorite(item: Item) {
-        addToFavoritNetworkState.postValue(NetworkState.LOADING)
+    val addItemASFavoriteNetworkState = MutableLiveData<NetworkState>()
+    fun addItemAsFavorite(item: Item) {
+        addItemASFavoriteNetworkState.postValue(NetworkState.LOADING)
 
-        repository.addToFavorite(item).addOnSuccessListener {
-            addToFavoritNetworkState.postValue(NetworkState.LOADED)
+        repository.addItemAsFavoriteTask(item).addOnSuccessListener {
+            addItemASFavoriteNetworkState.postValue(NetworkState.LOADED)
+            repository.updateItemFavoriteStats(item.docId, true)
         }.addOnFailureListener {
             val error = NetworkState.error(it.message)
-            addToFavoritNetworkState.postValue(error)
+            addItemASFavoriteNetworkState.postValue(error)
+        }
+    }
+
+    val removeItemAsFavoriteNetworkState = MutableLiveData<NetworkState>()
+    fun removeItemAsFavorite(item: Item) {
+
+        removeItemAsFavoriteNetworkState.postValue(NetworkState.LOADING)
+
+        repository.removeItemASFavoriteTask(item).addOnSuccessListener {
+            removeItemAsFavoriteNetworkState.postValue(NetworkState.LOADED)
+            repository.updateItemFavoriteStats(item.docId, false)
+        }.addOnFailureListener {
+            val error = NetworkState.error(it.message)
+            addItemASFavoriteNetworkState.postValue(error)
         }
     }
 }

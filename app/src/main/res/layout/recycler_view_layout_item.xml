@@ -21,7 +21,16 @@
         android:id="@+id/imageViewFavorite"
         android:layout_width="@dimen/icon_24"
         android:layout_height="@dimen/icon_24"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:focusable="true"
         android:src="@drawable/ic_not_favorite"/>
 
+    <ProgressBar
+        android:id="@+id/progressFavorite"
+        android:layout_width="@dimen/icon_24"
+        android:layout_height="@dimen/icon_24"
+        android:visibility="gone"
+        tools:visibility="visible"/>
 
 </LinearLayout>

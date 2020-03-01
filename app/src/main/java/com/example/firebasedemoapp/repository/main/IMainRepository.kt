@@ -8,5 +8,11 @@ interface IMainRepository {
 
     fun items() : Listing<Item>
 
-    fun addToFavorite(item: Item): Task<Void>
+    fun addItemAsFavoriteTask(item: Item): Task<Void>
+
+    fun removeItemASFavoriteTask(item: Item): Task<Void>
+
+    fun updateItemFavoriteStats(itemId: String, isFavorite: Boolean)
+
+    fun refreshItems()
 }

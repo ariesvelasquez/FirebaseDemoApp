@@ -2,9 +2,11 @@
 
     <!-- Views -->
     <dimen name="padding_16">16dp</dimen>
+    <dimen name="padding_32">32dp</dimen>
 
     <!-- Icons -->
     <dimen name="icon_24">24dp</dimen>
+    <dimen name="icon_64">64dp</dimen>
 
     <!-- Fonts -->
     <dimen name="font_16">16sp</dimen>

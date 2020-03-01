@@ -1,9 +1,11 @@
-package com.example.firebasedemoapp.view
+package com.example.firebasedemoapp.view.main
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.ProgressBar
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.firebasedemoapp.R
 import com.example.firebasedemoapp.model.Item
@@ -15,11 +17,32 @@ class ItemViewHolder(
 
     fun bind(item: Item?, position: Int) {
 
-//        val nameView =
+        if (item == null) return
+
+        // Init Views
+        val nameView = view.findViewById<TextView>(R.id.textViewName)
         val imageViewFavorite = view.findViewById<ImageView>(R.id.imageViewFavorite)
+        val progressFavorite = view.findViewById<ProgressBar>(R.id.progressFavorite)
+
+        // Default UI State
+        imageViewFavorite.visibility = View.VISIBLE
+        progressFavorite.visibility = View.GONE
+
+
+        // Set View Values
+        nameView.text = item?.name
+
+        // Handle Favorite State
+        if (item?.isFavorite!!) {
+            imageViewFavorite.setImageResource(R.drawable.ic_favorite)
+        } else {
+            imageViewFavorite.setImageResource(R.drawable.ic_not_favorite)
+        }
 
         imageViewFavorite.setOnClickListener {
-            onClickCallback.invoke(it, position, item!!)
+            it.visibility = View.GONE
+            progressFavorite.visibility = View.VISIBLE
+            onClickCallback.invoke(it, position, item)
         }
     }
 

@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">FirebaseDemoApp</string>
+    <string name="toolbar_title">My Favorite Demo</string>
+    <string name="delete_account">Delete Account</string>
+    <string name="signing_up">Signing up . . .</string>
+
+    <string name="loading_user">Loading... please wait...</string>
+
 </resources>

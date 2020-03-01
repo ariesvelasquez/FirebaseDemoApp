@@ -1,11 +1,13 @@
 package com.example.firebasedemoapp.repository.main
 
+import android.util.Log
 import androidx.paging.PagedList
 import com.example.firebasedemoapp.androidx.PagingRequestHelper
 import com.example.firebasedemoapp.model.Item
 import com.example.firebasedemoapp.utils.Const
 import com.example.firebasedemoapp.utils.Const.COLLECTION_ITEMS
 import com.example.firebasedemoapp.utils.Const.NAME
+import com.example.firebasedemoapp.utils.Const.ORDER
 import com.example.firebasedemoapp.utils.createStatusLiveData
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -36,7 +38,7 @@ class ItemBoundaryCallback(
     override fun onZeroItemsLoaded() {
 
         val query = firestore.collection(COLLECTION_ITEMS)
-            .orderBy(NAME, Query.Direction.ASCENDING)
+            .orderBy(ORDER, Query.Direction.ASCENDING)
             .limit(pageSize)
 
         helper.runIfNotRunning(PagingRequestHelper.RequestType.INITIAL) { helper ->
@@ -59,7 +61,7 @@ class ItemBoundaryCallback(
             if (!isLastPageReached && lastVisibleSnapshot != null) {
 
                 val nextQuery: Query = firestore.collection(COLLECTION_ITEMS)
-                    .orderBy(NAME, Query.Direction.ASCENDING)
+                    .orderBy(ORDER, Query.Direction.ASCENDING)
                     .startAfter(lastVisibleSnapshot!!)
                     .limit(pageSize)
 

@@ -7,22 +7,23 @@ import com.google.firebase.auth.FirebaseUser
 
 abstract class BaseActivity : AppCompatActivity(), FirebaseAuth.AuthStateListener {
 
-    protected val mFirebaseAuth = FirebaseAuth.getInstance()
+    protected var mFirebaseAuth = FirebaseAuth.getInstance()
+    protected var mFirebaseUser = mFirebaseAuth.currentUser
 
     abstract fun onUserLoggedOut()
-    abstract fun onUserLoggedIn(user: FirebaseUser)
+    abstract fun onUserLoggedIn()
 
     override fun onAuthStateChanged(firebaseAuth: FirebaseAuth) {
 
         Log.e("onAuthStateChanged", "onAuthStateChanged")
 
+        mFirebaseAuth = firebaseAuth
+        mFirebaseUser = firebaseAuth.currentUser
 
-        val firebaseUser = firebaseAuth.currentUser
-
-        if (firebaseUser == null) {
+        if (mFirebaseUser == null) {
             onUserLoggedOut()
         } else {
-            onUserLoggedIn(firebaseUser)
+            onUserLoggedIn()
         }
     }
 
