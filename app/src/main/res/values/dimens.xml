@@ -1,0 +1,12 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Views -->
+    <dimen name="padding_16">16dp</dimen>
+
+    <!-- Icons -->
+    <dimen name="icon_24">24dp</dimen>
+
+    <!-- Fonts -->
+    <dimen name="font_16">16sp</dimen>
+
+</resources>

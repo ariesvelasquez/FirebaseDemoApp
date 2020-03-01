@@ -18,4 +18,7 @@ interface DemoDao {
      */
     @Query("SELECT * FROM items")
     fun items(): DataSource.Factory<Int, Item>
+
+    @Query("UPDATE items SET isFavorite = :favoriteValue WHERE docId = :docId")
+    fun updateItemFavorite(favoriteValue: Boolean, docId: String)
 }

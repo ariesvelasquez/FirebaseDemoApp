@@ -2,7 +2,12 @@ package com.example.firebasedemoapp.utils
 
 object Const {
 
-    const val ITEMS_COLLECTION = "items"
-    const val OWNNER_ID = "ownerId"
+    // Collections
+    const val COLLECTION_ITEMS = "items"
+    const val COLLECTION_FAVORITES = "favorites"
+
+    // Fields
+    const val OWNER_ID = "ownerId"
     const val NAME = "name"
+    const val DOC_ID = "docId"
 }

@@ -3,12 +3,13 @@ package com.example.firebasedemoapp.repository.main
 import androidx.paging.PagedList
 import com.example.firebasedemoapp.androidx.PagingRequestHelper
 import com.example.firebasedemoapp.model.Item
-import com.example.firebasedemoapp.utils.Const.ITEMS_COLLECTION
+import com.example.firebasedemoapp.utils.Const
+import com.example.firebasedemoapp.utils.Const.COLLECTION_ITEMS
 import com.example.firebasedemoapp.utils.Const.NAME
-import com.example.firebasedemoapp.utils.Const.OWNNER_ID
 import com.example.firebasedemoapp.utils.createStatusLiveData
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
@@ -34,43 +35,16 @@ class ItemBoundaryCallback(
 
     override fun onZeroItemsLoaded() {
 
-        val query = firestore.collection(ITEMS_COLLECTION)
-            .whereEqualTo(OWNNER_ID, firebaseUser?.uid)
+        val query = firestore.collection(COLLECTION_ITEMS)
             .orderBy(NAME, Query.Direction.ASCENDING)
             .limit(pageSize)
 
-        helper.runIfNotRunning(PagingRequestHelper.RequestType.INITIAL) {
+        helper.runIfNotRunning(PagingRequestHelper.RequestType.INITIAL) { helper ->
 
             try {
-                query.get().addOnCompleteListener { task ->
-                    val itemList = mutableListOf<Item>()
-
-                    if (task.isSuccessful) {
-
-                        val querySnapshot = task.result
-
-                        for (document in querySnapshot!!) {
-                            val item = document.toObject(Item::class.java)
-                            itemList.add(item)
-                        }
-
-                        // Now get the last item from the list, this will be used as reference
-                        // what to fetch next.
-                        if (itemList.size < pageSize) {
-                            isLastPageReached = true
-                        } else {
-                            lastVisibleSnapshot =
-                                querySnapshot.documents[querySnapshot.size() - 1]
-                        }
-
-                        insertItemsIntoDb(itemList, it)
-                    } else {
-
-                        it.recordFailure(Throwable(task.exception?.message!!))
-                    }
-                }
+                callSetOfItems(query, helper)
             } catch (ioException: IOException) {
-                it.recordFailure(Throwable(ioException.message ?: "unknown error"))
+                helper.recordFailure(Throwable(ioException.message ?: "unknown error"))
             }
         }
     }
@@ -84,42 +58,82 @@ class ItemBoundaryCallback(
 
             if (!isLastPageReached && lastVisibleSnapshot != null) {
 
-                val nextQuery: Query = firestore.collection(ITEMS_COLLECTION)
-                    .whereEqualTo(OWNNER_ID, firebaseUser?.uid)
+                val nextQuery: Query = firestore.collection(COLLECTION_ITEMS)
                     .orderBy(NAME, Query.Direction.ASCENDING)
                     .startAfter(lastVisibleSnapshot!!)
                     .limit(pageSize)
 
                 try {
-                    nextQuery.get().addOnCompleteListener { task ->
-                        val nextItemList = mutableListOf<Item>()
-                        if (task.isSuccessful) {
-
-                            val querySnapshot = task.result
-
-                            for (document in querySnapshot!!) {
-                                val item = document.toObject(Item::class.java)
-                                nextItemList.add(item)
-                            }
-
-                            if (nextItemList.size < pageSize) {
-                                isLastPageReached = true
-                            } else {
-                                lastVisibleSnapshot = querySnapshot.documents[querySnapshot.size() - 1]
-                            }
-
-                            insertItemsIntoDb(nextItemList, it)
-
-                        } else {
-                            it.recordFailure(Throwable(task.exception?.message!!))
-                        }
-                    }
+                    callSetOfItems(nextQuery, it)
 
                 } catch (ioException: IOException) {
                     it.recordFailure(Throwable(ioException.message ?: "unknown error"))
                 }
             } else {
                 it.recordSuccess()
+            }
+        }
+    }
+
+    /**
+     * Fetch batch of items from a firestore collection then save it to db.
+     */
+    private fun callSetOfItems(query: Query, helper: PagingRequestHelper.Request.Callback) {
+        query.get().addOnCompleteListener { task ->
+            val itemList = mutableListOf<Item>()
+            val favoriteRefList = mutableListOf<DocumentReference>()
+
+            if (task.isSuccessful) {
+
+                val querySnapshotResult = task.result
+
+                for (document in querySnapshotResult!!) {
+                    val item = document.toObject(Item::class.java)
+
+                    // Set the possible favorite id from item docId and user uid
+                    val possibleFavoriteId = item.docId + "_" + firebaseUser?.uid.toString()
+
+                    // Define favorite ref then add it to the list of reference
+                    // that will be checked later
+                    val favoriteRef = firestore.collection(Const.COLLECTION_FAVORITES)
+                        .document(possibleFavoriteId)
+
+                    favoriteRefList.add(favoriteRef)
+
+                    // Also add the fetched item.
+                    itemList.add(item)
+                }
+
+                // Check all the collected favorite ref if exist
+                firestore.runTransaction { transaction ->
+
+                    itemList.forEachIndexed { index, item ->
+                        val isFavorite = transaction.get(favoriteRefList[index])
+
+                        if (isFavorite.exists()) {
+                            itemList[index].isFavorite = true
+                        }
+                    }
+
+                }.addOnSuccessListener {
+
+                    // Now get the last item from the list, this will be used as reference
+                    // what to fetch next.
+                    if (itemList.size < pageSize) {
+                        isLastPageReached = true
+                    } else {
+                        lastVisibleSnapshot =
+                            querySnapshotResult.documents[querySnapshotResult.size() - 1]
+                    }
+
+                    insertItemsIntoDb(itemList, helper)
+
+                }.addOnFailureListener { exception ->
+                    helper.recordFailure(Throwable(exception.message))
+                }
+
+            } else {
+                helper.recordFailure(Throwable(task.exception?.message!!))
             }
         }
     }
@@ -137,5 +151,4 @@ class ItemBoundaryCallback(
             it.recordSuccess()
         }
     }
-
 }
