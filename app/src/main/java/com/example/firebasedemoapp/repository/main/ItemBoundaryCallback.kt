@@ -1,12 +1,10 @@
 package com.example.firebasedemoapp.repository.main
 
-import android.util.Log
 import androidx.paging.PagedList
 import com.example.firebasedemoapp.androidx.PagingRequestHelper
 import com.example.firebasedemoapp.model.Item
 import com.example.firebasedemoapp.utils.Const
 import com.example.firebasedemoapp.utils.Const.COLLECTION_ITEMS
-import com.example.firebasedemoapp.utils.Const.NAME
 import com.example.firebasedemoapp.utils.Const.ORDER
 import com.example.firebasedemoapp.utils.createStatusLiveData
 import com.google.firebase.auth.FirebaseAuth
@@ -44,7 +42,7 @@ class ItemBoundaryCallback(
         helper.runIfNotRunning(PagingRequestHelper.RequestType.INITIAL) { helper ->
 
             try {
-                callSetOfItems(query, helper)
+                fetchAndSavedBatchOfItems(query, helper)
             } catch (ioException: IOException) {
                 helper.recordFailure(Throwable(ioException.message ?: "unknown error"))
             }
@@ -66,7 +64,7 @@ class ItemBoundaryCallback(
                     .limit(pageSize)
 
                 try {
-                    callSetOfItems(nextQuery, it)
+                    fetchAndSavedBatchOfItems(nextQuery, it)
 
                 } catch (ioException: IOException) {
                     it.recordFailure(Throwable(ioException.message ?: "unknown error"))
@@ -80,7 +78,10 @@ class ItemBoundaryCallback(
     /**
      * Fetch batch of items from a firestore collection then save it to db.
      */
-    private fun callSetOfItems(query: Query, helper: PagingRequestHelper.Request.Callback) {
+    private fun fetchAndSavedBatchOfItems(
+        query: Query,
+        helper: PagingRequestHelper.Request.Callback
+    ) {
         query.get().addOnCompleteListener { task ->
             val itemList = mutableListOf<Item>()
             val favoriteRefList = mutableListOf<DocumentReference>()

@@ -12,6 +12,8 @@ object Const {
     const val ORDER = "order"
     const val DOC_ID = "docId"
 
+    const val FIRAuthErrorCodeRequiresRecentLogin = "This operation is sensitive and requires recent authentication. Log in again before retrying this request."
+
     // Others
     const val GOGGLE_SIGN_IN_INTENT = 12345
 }

@@ -1,22 +1,26 @@
 package com.example.firebasedemoapp.repository.main
 
 import android.annotation.SuppressLint
+import android.net.Network
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
 import androidx.paging.toLiveData
 import com.example.firebasedemoapp.db.DemoDatabase
 import com.example.firebasedemoapp.model.Item
 import com.example.firebasedemoapp.repository.Listing
+import com.example.firebasedemoapp.repository.NetworkState
+import com.example.firebasedemoapp.utils.Const
 import com.example.firebasedemoapp.utils.Const.COLLECTION_FAVORITES
 import com.example.firebasedemoapp.utils.Const.DOC_ID
 import com.example.firebasedemoapp.utils.Const.OWNER_ID
+import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.GoogleAuthCredential
+import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
 import java.util.concurrent.Executor
-import kotlin.math.log
 
 class MainRepository(
     val db: DemoDatabase,
@@ -26,8 +30,7 @@ class MainRepository(
 ) : IMainRepository {
 
     override fun items(): Listing<Item> {
-
-        val pageSize = 4
+        val pageSize = 9
 
         val boundaryCallback = ItemBoundaryCallback(
             pageSize = pageSize.toLong(),
@@ -42,27 +45,24 @@ class MainRepository(
             boundaryCallback = boundaryCallback
         )
 
-//        val refreshTrigger = MutableLiveData<Unit>()
-//        val refreshState = Transformations.switchMap(refreshTrigger) {
-//            refreshItems()
-//        }
-
         return Listing(
             pagedList = pagedList,
-            networkState = boundaryCallback.networkState,
-            refresh = {
-                this.refreshItems()
-            }
+            networkState = boundaryCallback.networkState
         )
     }
 
-    override fun refreshItems() {
-        Log.e("Repository ", "refreshItems")
+    override fun deleteItems() : MutableLiveData<NetworkState>{
+        val networkState = MutableLiveData<NetworkState>()
+
+        networkState.postValue(NetworkState.LOADING)
+
         ioExecutor.execute {
-            db.runInTransaction {
-                db.dao().clearItems()
+            db.dao().clearItems().run {
+                networkState.postValue(NetworkState.LOADED)
             }
         }
+
+        return networkState
     }
 
     /**
@@ -111,6 +111,42 @@ class MainRepository(
                 db.dao().updateItemFavorite(itemId, isFavorite)
             }
         }
+    }
+
+    override fun deleteUser(uid: String?): MutableLiveData<NetworkState> {
+        val networkState = MutableLiveData<NetworkState>()
+
+        networkState.postValue(NetworkState.LOADING)
+
+        // Find favorites data of the user refs
+        firestore.collection(COLLECTION_FAVORITES)
+            .whereEqualTo(OWNER_ID, uid).get()
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val querySnapshotResult = task.result
+
+                    // Delete All Firestore Data
+                    firestore.runTransaction { transaction ->
+                        querySnapshotResult!!.documents.forEach { doc ->
+                            transaction.delete(doc.reference)
+                        }
+
+                    }.addOnSuccessListener {
+                        Log.v("Delete Task", "Success")
+                        // Delete Favorite Data
+
+                        networkState.postValue(NetworkState.LOADED)
+                    }.addOnFailureListener {
+                        val error = NetworkState.error(it.message.toString())
+                        networkState.postValue(error)
+                    }
+                } else {
+                    val error = NetworkState.error(task.exception?.message.toString())
+                    networkState.postValue(error)
+                }
+            }
+
+        return networkState
     }
 }
 

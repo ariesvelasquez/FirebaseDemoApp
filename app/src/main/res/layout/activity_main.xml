@@ -15,10 +15,10 @@
         android:id="@+id/progressBarLoader"
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
-        android:layout_height="3dp"
+        android:layout_height="6dp"
         android:visibility="invisible"
         android:indeterminate="true"
-        android:indeterminateTint="@color/colorAccent"
+        android:indeterminateTint="@color/colorPrimary"
         tools:progress="20"
         tools:visibility="visible"/>
 

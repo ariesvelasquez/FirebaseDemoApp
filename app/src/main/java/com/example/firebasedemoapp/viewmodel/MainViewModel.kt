@@ -23,9 +23,9 @@ class MainViewModel(private val repository: IMainRepository) : ViewModel() {
         this.isItemsInitialized.value = true
     }
 
-    fun refreshItems() {
-        Log.e("ViewModel", "refreshItems")
-        repository.refreshItems()
+    var deleteItemsNetworkState = MutableLiveData<NetworkState>()
+    fun deleteItems() {
+        deleteItemsNetworkState = repository.deleteItems()
     }
 
     val addItemASFavoriteNetworkState = MutableLiveData<NetworkState>()
@@ -53,5 +53,14 @@ class MainViewModel(private val repository: IMainRepository) : ViewModel() {
             val error = NetworkState.error(it.message)
             addItemASFavoriteNetworkState.postValue(error)
         }
+    }
+
+    /**
+     * Auth
+     */
+    var deleteUserFavoritesNetworkState = MutableLiveData<NetworkState>()
+
+    fun deleteAccount(uid: String?) {
+        deleteUserFavoritesNetworkState = repository.deleteUser(uid)
     }
 }

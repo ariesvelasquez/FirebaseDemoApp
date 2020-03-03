@@ -5,5 +5,8 @@
     <string name="signing_up">Signing up . . .</string>
 
     <string name="loading_user">Loading... please wait...</string>
+    <string name="refreshed_item_list">Refreshed Item List</string>
+    <string name="added_item_as_favorite">Added as Favorite</string>
+    <string name="removed_item_as_favorite">Removed as Favorite</string>
 
 </resources>
