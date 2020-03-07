@@ -35,7 +35,6 @@ class MainActivity : BaseActivity() {
     companion object {
         const val JUST_SIGNED_IN = "justSignedIn"
         const val FOR_DELETION_AFTER_RE_AUTH = "forDeletion"
-        const val DELETE_ACCOUNT = "deleteAccount"
     }
 
     private lateinit var adapter: ItemsRecyclerViewAdapter
@@ -92,7 +91,6 @@ class MainActivity : BaseActivity() {
     private fun initAdapter() {
         adapter =
             ItemsRecyclerViewAdapter { view, pos, item ->
-
                 when (view.id) {
                     R.id.imageViewFavorite -> handleFavoriteOnClick(item)
                 }
@@ -208,8 +206,11 @@ class MainActivity : BaseActivity() {
 
         when {
             hasJustSignedIn && isConnectedToInternet -> {
+                // This will prevent refresh call on orientation change.
+                intent.putExtra(JUST_SIGNED_IN, false)
+
                 // Delete old list then re-fetch new items after successful deletion
-                clearListItems()
+                refreshItems()
             }
             else -> {
                 // Just get the current items from room
@@ -222,7 +223,7 @@ class MainActivity : BaseActivity() {
         viewModel.initializeItems()
     }
 
-    private fun clearListItems() {
+    private fun refreshItems() {
         viewModel.deleteItems()
         handleDeleteItemsNetworkState()
     }

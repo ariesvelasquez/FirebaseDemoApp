@@ -3,6 +3,7 @@ package com.example.firebasedemoapp.view.splash
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import com.example.firebasedemoapp.R
 import com.example.firebasedemoapp.utils.extentions.launchActivity
 import com.example.firebasedemoapp.view.BaseActivity
@@ -16,7 +17,6 @@ class SplashScreenActivity : BaseActivity() {
     }
 
     override fun onUserLoggedIn() {
-        Log.e("SplashScreenActivity", "launchActivity<MainActivity>")
         launchActivity<MainActivity> {
             putExtra(MainActivity.JUST_SIGNED_IN, true)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -29,7 +29,7 @@ class SplashScreenActivity : BaseActivity() {
         mFirebaseAuth.signInAnonymously()
             .addOnCompleteListener { task ->
                 if (!task.isSuccessful) {
-                    Log.e("failed", task.exception.toString())
+                    Toast.makeText(this, task.exception?.message.toString(), Toast.LENGTH_LONG).show()
                 }
             }
     }

@@ -26,8 +26,6 @@ abstract class BaseActivity : AppCompatActivity(), FirebaseAuth.AuthStateListene
 
     override fun onAuthStateChanged(firebaseAuth: FirebaseAuth) {
 
-        Log.e("BASEACTIVITY", "onAuthStateChanged " + firebaseAuth.currentUser?.isAnonymous)
-
         mFirebaseAuth = firebaseAuth
         mFirebaseUser = firebaseAuth.currentUser
 

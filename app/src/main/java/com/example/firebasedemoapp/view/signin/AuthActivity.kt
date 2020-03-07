@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.firebasedemoapp.R
 import com.example.firebasedemoapp.utils.Const.GOGGLE_SIGN_IN_INTENT
@@ -59,8 +60,6 @@ class AuthActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         super.onBackPressed()
-        Log.e("AuthActivity", "launchActivity<MainActivity> onBackPressed")
-
         launchActivity<MainActivity> {  }
         finish()
     }
@@ -113,7 +112,7 @@ class AuthActivity : AppCompatActivity() {
                     // Email already a linked, so just sign in.
                     signInUserWithGoogleCredential(googleAuthCredential)
                 } catch (e: Exception) {
-                    Log.e("AuthActivity", "linkWithCredential:failure", authTask.exception)
+                    Toast.makeText(this, authTask.exception?.message.toString(), Toast.LENGTH_LONG).show()
                 }
             }
         }
@@ -131,9 +130,10 @@ class AuthActivity : AppCompatActivity() {
                         putExtra(MainActivity.FOR_DELETION_AFTER_RE_AUTH, isForReAuthentication)
                         putExtra(MainActivity.JUST_SIGNED_IN, true)
                     }
-
                     finish()
                 }
+            } else {
+                Toast.makeText(this, authTask.exception?.message.toString(), Toast.LENGTH_LONG).show()
             }
         }
     }
